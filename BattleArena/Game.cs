@@ -24,11 +24,28 @@ namespace BattleArena
         private int currentEnemyIndex = 0;
         private Character currentEnemy;
 
+        Character wizardClass;
+        Character kightClass;
+
+        Character slimeEnemy;
+        Character zombieEnemy;
+        Character krisEnemy;
+
+
         /// <summary>
         /// Function that starts the main game loop
         /// </summary>
         public void Run()
         {
+            Start();
+
+            while(!gameOver)
+            {
+                Update();
+
+            }
+
+            End();
         }
 
         /// <summary>
@@ -36,6 +53,7 @@ namespace BattleArena
         /// </summary>
         public void Start()
         {
+            
         }
 
         /// <summary>
