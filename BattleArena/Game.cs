@@ -25,14 +25,7 @@ namespace BattleArena
         Character player;
         Character[] enemies;
         private int currentEnemyIndex = 0;
-
-        Character wizardClass;
-        Character knightClass;
-
-        Character slimeEnemy;
-        Character zombieEnemy;
-        Character krisEnemy;
-
+        private Character currentEnemy;
 
         /// <summary>
         /// Function that starts the main game loop
@@ -55,38 +48,22 @@ namespace BattleArena
         /// </summary>
         public void Start()
         {
-            //Wizard Classification 
-            wizardClass.health = 50f;
-            wizardClass.attackPower = 25f;
-            wizardClass.defensePower = 0f;
-
-            //Knight Classification 
-
-            knightClass.health = 75f;
-            knightClass.attackPower = 15f;
-            knightClass.defensePower = 10f;
-
+            gameOver = false;
+            currentScene = 0;
+          
             //Slime Classification 
-            slimeEnemy.name = "Slime";
-            slimeEnemy.health = 10f;
-            slimeEnemy.defensePower = 1f;
-            slimeEnemy.defensePower = 0f;
+            Character slimeEnemy = new Character {name = "Slime", health = 10f, attackPower = 1f, defensePower = 0f };
 
             //Zom=B Classidfication 
-            zombieEnemy.name = "Zom-B";
-            zombieEnemy.health = 15f;
-            zombieEnemy.attackPower = 5f;
-            zombieEnemy.defensePower = 2f;
+            Character zombieEnemy = new Character {name = "Zom-B", health = 15f, attackPower = 5f, defensePower = 2f };
 
-            //A Guy Name Kris Classification '
-            krisEnemy.name = "Uncle Phill";
-            krisEnemy.health = 25;
-            krisEnemy.attackPower = 10;
-            krisEnemy.defensePower = 5;
+            //A Guy Name Kris Classification
+            Character unclePhil = new Character {name = "Uncle Phill", health = 25, attackPower = 10, defensePower = 5 };
 
-            enemies = new Character[] { slimeEnemy, zombieEnemy, krisEnemy };
+            enemies = new Character[] { slimeEnemy, zombieEnemy, unclePhil };
             currentEnemyIndex = 0;
 
+            currentEnemy = enemies[currentEnemyIndex]; 
             
         }
 
@@ -163,13 +140,15 @@ namespace BattleArena
             {
                 case 0:
                     GetPlayerName();
-                    CharacterSelection();
                     break;
                 case 1:
-                    Battle();
-                    UpdateCurrentEnemy();
+                    CharacterSelection();
                     break;
                 case 2:
+                    Battle();
+                    CheckBattleResults();
+                    break;
+                case 3:
                     DisplayMainMenu();
                     break;
             }
@@ -185,8 +164,9 @@ namespace BattleArena
             switch (choice)
             {
                 case 1:
-                    Start();
                     currentScene = 0;
+                    currentEnemyIndex = 0;
+                    currentEnemy = enemies[currentEnemyIndex];
                     break;
                 case 2:
                     gameOver = true;
@@ -201,17 +181,16 @@ namespace BattleArena
         /// </summary>
         void GetPlayerName()
         {
-            bool okayWithName = false;
-            while (!okayWithName) {
+
                 Console.WriteLine("Welcome! Please enter your name");
                 Console.Write("> ");
                
                 playerName = Console.ReadLine();
                 Console.Clear();
 
-                if(GetInput("You've entered " + playerName + " are you sure you want to keep this name?", "Yes", "No") == 1)
-                    okayWithName = true;
-            }
+            if (GetInput("You've entered " + playerName + " are you sure you want to keep this name?", "Yes", "No") == 1)
+                currentScene++;
+            
              
         }
 
@@ -225,11 +204,13 @@ namespace BattleArena
             
             if ( choice == 1)
             {
-                player = wizardClass;
+                //Wizard Classification 
+                player = new Character { health = 50f, attackPower = 25f, defensePower = 0f }; ;
             }
+            //Knight Classification
             else if(choice == 2)
             {
-                player = knightClass;
+                player = new Character { health = 75f, attackPower = 15f, defensePower = 10f };
             }
             
             player.name = playerName;
@@ -241,21 +222,7 @@ namespace BattleArena
         /// </summary>
         public void UpdateCurrentEnemy()
         {
-            if(currentEnemyIndex >= enemies.Length)
-            {
-                currentScene = 2;
-            }
-
-            if (enemies[currentEnemyIndex].health <= 0)
-            {
-                Console.WriteLine("You Slayed the " + enemies[currentEnemyIndex].name);
-                currentEnemyIndex++;
-                Console.ReadKey();
-                Console.Clear();
-
-                if (TryToEndSimulation())
-                    return;
-            }
+           
           
         }
 
@@ -263,7 +230,7 @@ namespace BattleArena
         {
             bool simulation = currentEnemyIndex >= enemies.Length;
             if (simulation)
-                currentScene = 2;
+                currentScene++;
             return simulation;
 
         }
@@ -304,6 +271,10 @@ namespace BattleArena
         {
             float damageTaken = CalculateDamage(attacker.attackPower, defender.defensePower);
             defender.health -= damageTaken;
+
+            if (defender.health < 0)
+                defender.health = 0;
+
             return damageTaken;
 
         }
@@ -319,32 +290,35 @@ namespace BattleArena
 
             DisplayStats(player);
 
-            DisplayStats(enemies[currentEnemyIndex]);
+            DisplayStats(currentEnemy);
 
-            int choice = GetInput(enemies[currentEnemyIndex].name + " stands in front of you! What will you do?", "Attack","Dodge");
+            int choice = GetInput(currentEnemy + " stands in front of you! What will you do?", "Attack","Dodge");
 
             
 
             if (choice == 1)
             {
-                float damageDealt = Attack(ref player, ref enemies[currentEnemyIndex]);
+                float damageDealt = Attack(ref player, ref currentEnemy);
                 Console.WriteLine("You delt " + damageDealt + " damage!");
-
-                float damgeTaken = Attack(ref enemies[currentEnemyIndex], ref player);
-                Console.WriteLine(enemies[currentEnemyIndex].name + " dealt " + damgeTaken);
-
+               
                 Console.ReadKey();
                 Console.Clear();
-
-              
             }
             else if (choice == 2)
             {
                 Console.WriteLine("You dodged the enemy's attack!");
-
+                
                 Console.ReadKey();
                 Console.Clear();
+                return;
             }
+
+
+            float damgeTaken = Attack(ref currentEnemy, ref player);
+            Console.WriteLine(currentEnemy.name + " dealt " + damgeTaken);
+
+            Console.ReadKey(true);
+            Console.Clear();
 
             CheckBattleResults();
 
@@ -356,15 +330,30 @@ namespace BattleArena
         /// Updates the game based on who won the battle..
         /// </summary>
         void CheckBattleResults()
-        {
+        { 
 
-            if (player.health <= 0 && enemies[currentEnemyIndex].health <= 0)
-                Console.WriteLine("Draw");
-
-            else if (player.health <= 0)
+            if (player.health <= 0)
             {
                 Console.WriteLine("You Died");
                 currentScene++;
+            }
+            else if (currentEnemy.health <= 0)
+            {
+                Console.WriteLine("You Slayed the " + currentEnemy.name);
+                currentEnemyIndex++;
+
+                if (currentEnemyIndex >= enemies.Length)
+                {
+                    Console.WriteLine("They All Dead, Way To Goo");
+                    currentScene++;
+                    
+                    Console.ReadKey(true);
+                    Console.Clear();
+
+                    return;
+                }
+                
+                
             }
 
 
