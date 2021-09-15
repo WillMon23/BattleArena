@@ -9,23 +9,16 @@ namespace BattleArena
     /// <summary>
     /// Represents any entity that exists in game
     /// </summary>
-    struct Character
-    {
-        public string name;
-        public float health;
-        public float attackPower;
-        public float defensePower;
-    }
 
     class Game
     {
-        string playerName; 
-        bool gameOver;
-        int currentScene;
-        Character player;
-        Character[] enemies;
-        private int currentEnemyIndex = 0;
-        private Character currentEnemy;
+        private string _playerName; 
+        private bool _gameOver;
+        private int _currentScene;
+        private Entity _player;
+        private Entity[] _enemies;
+        private int _currentEnemyIndex = 0;
+        private Entity _currentEnemy;
 
         /// <summary>
         /// Function that starts the main game loop
@@ -34,7 +27,7 @@ namespace BattleArena
         {
             Start();
 
-            while(!gameOver)
+            while(!_gameOver)
             {
                 Update();
 
@@ -48,22 +41,20 @@ namespace BattleArena
         /// </summary>
         public void Start()
         {
-            gameOver = false;
-            currentScene = 0;
-          
+            _gameOver = false;
+            _currentScene = 0;
+
             //Slime Classification 
-            Character slimeEnemy = new Character {name = "Slime", health = 10f, attackPower = 1f, defensePower = 0f };
+            Entity slimeEnemy = new Entity("Slime", 10f, 1f, 0f);
 
             //Zom=B Classidfication 
-            Character zombieEnemy = new Character {name = "Zom-B", health = 15f, attackPower = 5f, defensePower = 2f };
+            Entity zombieEnemy = new Entity("Zom-B", 15f, 5f, 2f);
 
             //A Guy Name Kris Classification
-            Character unclePhil = new Character {name = "Uncle Phill", health = 25, attackPower = 10, defensePower = 5 };
+            Entity unclePhil = new Entity("Uncle Phill", 25, 10, 5);
 
-            enemies = new Character[] { slimeEnemy, zombieEnemy, unclePhil };
-            currentEnemyIndex = 0;
-
-            currentEnemy = enemies[currentEnemyIndex]; 
+            _enemies = new Entity[] { slimeEnemy, zombieEnemy, unclePhil };
+            _currentEnemyIndex = 0;
             
         }
 
@@ -136,7 +127,7 @@ namespace BattleArena
         /// </summary>
         void DisplayCurrentScene()
         {
-            switch (currentScene)
+            switch (_currentScene)
             {
                 case 0:
                     GetPlayerName();
@@ -153,7 +144,7 @@ namespace BattleArena
                     break;
             }
         }
-
+        
         /// <summary>
         /// Displays the menu that allows the player to start or quit the game
         /// </summary>
@@ -164,12 +155,12 @@ namespace BattleArena
             switch (choice)
             {
                 case 1:
-                    currentScene = 0;
-                    currentEnemyIndex = 0;
-                    currentEnemy = enemies[currentEnemyIndex];
+                    _currentScene = 0;
+                    _currentEnemyIndex = 0;
+                    _currentEnemy = _enemies[_currentEnemyIndex];
                     break;
                 case 2:
-                    gameOver = true;
+                    _gameOver = true;
                     break;
                
             }
@@ -185,14 +176,11 @@ namespace BattleArena
                 Console.WriteLine("Welcome! Please enter your name");
                 Console.Write("> ");
                
-                playerName = Console.ReadLine();
+                _playerName = Console.ReadLine();
                 Console.Clear();
 
-            if (GetInput("You've entered " + playerName + " are you sure you want to keep this name?", "Yes", "No") == 1)
-                currentScene++;
-            
-             
-        }
+            if (GetInput("You've entered " + _playerName + " are you sure you want to keep this name?", "Yes", "No") == 1)
+                _currentScene++;        }
 
         /// <summary>
         /// Gets the players choice of character. Updates player stats based on
@@ -203,34 +191,22 @@ namespace BattleArena
             int choice = GetInput("Nice To meet you, Please select a character.", "Wizard", "Knight");
             
             if ( choice == 1)
-            {
                 //Wizard Classification 
-                player = new Character { health = 50f, attackPower = 25f, defensePower = 0f }; ;
-            }
+                _player = new Entity(_playerName,50f, 25f, 0f);
+            
             //Knight Classification
             else if(choice == 2)
-            {
-                player = new Character { health = 75f, attackPower = 15f, defensePower = 10f };
-            }
-            
-            player.name = playerName;
-            currentScene++;
+                _player = new Entity(_playerName, 75f, 15f, 10f);
+
+            _currentScene++;
         }
 
-        /// <summary>
-        /// Update the current monster When Monster health hasReached 0
-        /// </summary>
-        public void UpdateCurrentEnemy()
-        {
-           
-          
-        }
 
         public bool TryToEndSimulation()
         {
-            bool simulation = currentEnemyIndex >= enemies.Length;
+            bool simulation = _currentEnemyIndex >= _enemies.Length;
             if (simulation)
-                currentScene++;
+                _currentScene++;
             return simulation;
 
         }
@@ -239,12 +215,12 @@ namespace BattleArena
         /// Prints a characters stats to the console
         /// </summary>
         /// <param name="character">The character that will have its stats shown</param>
-        void DisplayStats(Character character)
+        void DisplayStats(Entity character)
         {
-            Console.WriteLine("Name: " + character.name +
-                "\nHealth: " + character.health +
-                "\nAttack Power: " + character.attackPower +
-                "\nDefense Power: " + character.defensePower + "\n");
+            Console.Write("Name: " + character.Name +
+                "\nHealth: " + character.Health +
+                "\nAttack Power: " + character.AttackPower +
+                "\nDefense Power: " + character.DefensePower + "\n>");
         }
 
         /// <summary>
@@ -267,13 +243,13 @@ namespace BattleArena
         /// <param name="attacker">The character that initiated the attack</param>
         /// <param name="defender">The character that is being attacked</param>
         /// <returns>The amount of damage done to the defender</returns>
-        public float Attack(ref Character attacker, ref Character defender)
+        public float Attack(ref Entity attacker, ref Entity defender)
         {
-            float damageTaken = CalculateDamage(attacker.attackPower, defender.defensePower);
-            defender.health -= damageTaken;
+            float damageTaken = CalculateDamage(attacker.AttackPower, defender.DefensePower);
+            defender.Health -= damageTaken;
 
-            if (defender.health < 0)
-                defender.health = 0;
+            if (defender.Health < 0)
+                defender.Health = 0;
 
             return damageTaken;
 
@@ -286,23 +262,21 @@ namespace BattleArena
         {
             Random rng = new Random();
 
-            
+            _currentEnemy = _enemies[_currentEnemyIndex];
 
-            DisplayStats(player);
+            DisplayStats(_player);
 
-            DisplayStats(currentEnemy);
+            DisplayStats(_currentEnemy);
 
-            int choice = GetInput(currentEnemy + " stands in front of you! What will you do?", "Attack","Dodge");
+            int choice = GetInput(_currentEnemy + " stands in front of you! What will you do?", "Attack","Dodge");
 
             
 
             if (choice == 1)
             {
-                float damageDealt = Attack(ref player, ref currentEnemy);
+                float damageDealt = Attack(ref _player, ref _currentEnemy);
                 Console.WriteLine("You delt " + damageDealt + " damage!");
-               
-                Console.ReadKey();
-                Console.Clear();
+
             }
             else if (choice == 2)
             {
@@ -314,15 +288,11 @@ namespace BattleArena
             }
 
 
-            float damgeTaken = Attack(ref currentEnemy, ref player);
-            Console.WriteLine(currentEnemy.name + " dealt " + damgeTaken);
+             float damgeTaken = Attack(ref _currentEnemy, ref _player);
+             Console.WriteLine(_currentEnemy.name + " dealt " + damgeTaken);
 
             Console.ReadKey(true);
             Console.Clear();
-
-            CheckBattleResults();
-
-
         }
 
         /// <summary>
@@ -332,29 +302,32 @@ namespace BattleArena
         void CheckBattleResults()
         { 
 
-            if (player.health <= 0)
+            if (_player.health <= 0)
             {
                 Console.WriteLine("You Died");
-                currentScene++;
+                _currentScene++;
             }
-            else if (currentEnemy.health <= 0)
+            if (_currentEnemy.health <= 0)
             {
-                Console.WriteLine("You Slayed the " + currentEnemy.name);
-                currentEnemyIndex++;
-
-                if (currentEnemyIndex >= enemies.Length)
-                {
-                    Console.WriteLine("They All Dead, Way To Goo");
-                    currentScene++;
-                    
-                    Console.ReadKey(true);
-                    Console.Clear();
-
-                    return;
-                }
-                
-                
+                Console.WriteLine("You Slayed the " + _currentEnemy.name);
+                _currentEnemyIndex++;
+                Console.ReadKey(true);
+                Console.Clear();
             }
+
+            if (_currentEnemyIndex >= _enemies.Length)
+            {
+                Console.WriteLine("They All Dead, Way To Goo");
+                _currentScene++;
+
+                Console.ReadKey(true);
+                Console.Clear();
+
+                return;
+            }
+                
+                
+            
 
 
         }
