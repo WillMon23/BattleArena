@@ -43,7 +43,14 @@ namespace BattleArena
         {
             _gameOver = false;
             _currentScene = 0;
+            InitilalzeEnemies();
 
+
+        }
+
+        public void InitilalzeEnemies()
+        {
+            _currentEnemyIndex = 0;
             //Slime Classification 
             Entity slimeEnemy = new Entity("Slime", 10f, 1f, 0f);
 
@@ -51,10 +58,9 @@ namespace BattleArena
             Entity zombieEnemy = new Entity("Zom-B", 15f, 5f, 2f);
 
             //A Guy Name Kris Classification
-            Entity unclePhil = new Entity("Uncle Phill", 25, 10, 5);
+            Entity unclePhil = new Entity("Uncle Phill", 40, 10, 5);
 
             _enemies = new Entity[] { slimeEnemy, zombieEnemy, unclePhil };
-            _currentEnemyIndex = 0;
             
         }
 
@@ -158,6 +164,7 @@ namespace BattleArena
                     _currentScene = 0;
                     _currentEnemyIndex = 0;
                     _currentEnemy = _enemies[_currentEnemyIndex];
+                    InitilalzeEnemies();
                     break;
                 case 2:
                     _gameOver = true;
@@ -224,38 +231,6 @@ namespace BattleArena
         }
 
         /// <summary>
-        /// Calculates the amount of damage that will be done to a character
-        /// </summary>
-        /// <param name="attackPower">The attacking character's attack power</param>
-        /// <param name="defensePower">The defending character's defense power</param>
-        /// <returns>The amount of damage done to the defender</returns>
-        float CalculateDamage(float attackPower, float defensePower)
-        {
-            float damage = attackPower - defensePower;
-            if (damage <= 0)
-                return 0;
-            return damage;
-        }
-
-        /// <summary>
-        /// Deals damage to a character based on an attacker's attack power
-        /// </summary>
-        /// <param name="attacker">The character that initiated the attack</param>
-        /// <param name="defender">The character that is being attacked</param>
-        /// <returns>The amount of damage done to the defender</returns>
-        public float Attack(ref Entity attacker, ref Entity defender)
-        {
-            float damageTaken = CalculateDamage(attacker.AttackPower, defender.DefensePower);
-            defender.Health -= damageTaken;
-
-            if (defender.Health < 0)
-                defender.Health = 0;
-
-            return damageTaken;
-
-        }
-
-        /// <summary>
         /// Simulates one turn in the current monster fight
         /// </summary>
         public void Battle()
@@ -270,11 +245,11 @@ namespace BattleArena
 
             int choice = GetInput(_currentEnemy + " stands in front of you! What will you do?", "Attack","Dodge");
 
-            
+            _currentEnemy.TakeDamage(_player.AttackPower);
 
             if (choice == 1)
             {
-                float damageDealt = Attack(ref _player, ref _currentEnemy);
+                float damageDealt = _player.Attack(_currentEnemy);
                 Console.WriteLine("You delt " + damageDealt + " damage!");
 
             }
@@ -288,8 +263,8 @@ namespace BattleArena
             }
 
 
-             float damgeTaken = Attack(ref _currentEnemy, ref _player);
-             Console.WriteLine(_currentEnemy.name + " dealt " + damgeTaken);
+             float damgeTaken = _currentEnemy.Attack(_player);
+             Console.WriteLine(_currentEnemy.Name + " dealt " + damgeTaken);
 
             Console.ReadKey(true);
             Console.Clear();
@@ -302,14 +277,14 @@ namespace BattleArena
         void CheckBattleResults()
         { 
 
-            if (_player.health <= 0)
+            if (_player.Health <= 0)
             {
                 Console.WriteLine("You Died");
                 _currentScene++;
             }
-            if (_currentEnemy.health <= 0)
+            if (_currentEnemy.Health <= 0)
             {
-                Console.WriteLine("You Slayed the " + _currentEnemy.name);
+                Console.WriteLine("You Slayed the " + _currentEnemy.Name);
                 _currentEnemyIndex++;
                 Console.ReadKey(true);
                 Console.Clear();
@@ -325,10 +300,6 @@ namespace BattleArena
 
                 return;
             }
-                
-                
-            
-
 
         }
 
