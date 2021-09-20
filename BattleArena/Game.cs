@@ -9,11 +9,17 @@ namespace BattleArena
     /// <summary>
     /// Represents any entity that exists in game
     /// </summary>
-
+    public enum ItemType
+    {
+        DEFENSE,
+        ATTACK,
+        NONE
+    }
     public struct Item
     {
         public string Name;
         public float StatBoost;
+        public ItemType Type;
 
     }
     class Game
@@ -117,34 +123,43 @@ namespace BattleArena
             string input = "";
             int inputReceived = -1;
 
-            while (inputReceived == -1 )
+            while (inputReceived == -1)
             {
                 //Print options
                 Console.WriteLine(description);
                 for (int i = 0; i < options.Length; i++)
                     Console.WriteLine((i + 1) + ". " + options[i]);
-            }
-            Console.Write("> ");
-            
-            //Set Current Response to a Obtainable Variable
-            input = Console.ReadLine();
 
-            //If the player typed and int...
-            if (int.TryParse(input, out inputReceived))
-            {
-                //... decrement the input and check if it's within the bounds the array 
-                inputReceived--;
-                if (inputReceived < 0 || inputReceived >= options.Length)
+                Console.Write("> ");
+
+                //Set Current Response to a Obtainable Variable
+                input = Console.ReadLine();
+
+                //If the player typed and int...
+                if (int.TryParse(input, out inputReceived))
                 {
+                    //... decrement the input and check if it's within the bounds the array 
+                    inputReceived--;
+                    if (inputReceived < 0 || inputReceived >= options.Length)
+                    {
+                        //sets invalde input to default value
+                        inputReceived = -1;
+                        //Display error message 
+                        Console.WriteLine("Invalid Input");
+                        Console.ReadKey(true);
+                    }
+                    Console.Clear();
+                }
+                //If the player didn't type an int 
+                else
+                {
+                    //set input recived to the default value 
                     inputReceived = -1;
-                    //Display error message 
                     Console.WriteLine("Invalid Input");
                     Console.ReadKey(true);
                 }
-
             }
-            return inputReceived;
-            
+                return inputReceived;
         }
 
         /// <summary>
@@ -179,13 +194,13 @@ namespace BattleArena
 
             switch (choice)
             {
-                case 1:
+                case 0:
                     _currentScene = 0;
                     _currentEnemyIndex = 0;
                     _currentEnemy = _enemies[_currentEnemyIndex];
                     InitilalzeEnemies();
                     break;
-                case 2:
+                case 1:
                     _gameOver = true;
                     break;
                
@@ -205,7 +220,7 @@ namespace BattleArena
                 _playerName = Console.ReadLine();
                 Console.Clear();
 
-            if (GetInput("You've entered " + _playerName + " are you sure you want to keep this name?", "Yes", "No") == 1)
+            if (GetInput("You've entered " + _playerName + " are you sure you want to keep this name?", "Yes", "No") == 0)
                 _currentScene++;        
         }
 
@@ -217,12 +232,12 @@ namespace BattleArena
         {
             int choice = GetInput("Nice To meet you, Please select a character.", "Wizard", "Knight");
 
-            if (choice == 1)
+            if (choice == 0)
                 //Wizard Classification 
                 _player = new Player(_playerName, 50f, 25f, 0f, _wizardItems);
 
             //Knight Classification
-            else if (choice == 2)
+            else if (choice == 1)
                 _player = new Player(_playerName, 75f, 15f, 10f, _knightItems);
 
             _currentScene++;
@@ -249,6 +264,19 @@ namespace BattleArena
                 "\nDefense Power: " + character.DefensePower + "\n>");
         }
 
+        public void DisplayEquipItemMenu()
+        {
+            //Get item index 
+            int choice = GetInput("Select an item to equip.", _player.GetItemNames());
+            //Equip item at the given index 
+            if (!_player.TryEquipItem(choice))
+                //Notifies if not possible to equip
+                Console.WriteLine("You couldn't find that item in your bag.");
+            //Print Feed Back 
+            Console.WriteLine("You equipped " + _player.CurrentItem.Name + "!");
+
+        }
+
         /// <summary>
         /// Simulates one turn in the current monster fight
         /// </summary>
@@ -266,25 +294,26 @@ namespace BattleArena
 
             _currentEnemy.TakeDamage(_player.AttackPower);
 
-            if (choice == 1)
+            if (choice == 0)
             {
                 float damageDealt = _player.Attack(_currentEnemy);
                 Console.WriteLine("You delt " + damageDealt + " damage!");
 
+                float damgeTaken = _currentEnemy.Attack(_player);
+                Console.WriteLine(_currentEnemy.Name + " dealt " + damgeTaken);
+
+
             }
-            else if (choice == 2)
+            else if (choice == 1)
             {
-                Console.WriteLine("You dodged the enemy's attack!");
-                
-                Console.ReadKey();
+                DisplayEquipItemMenu();
+                Console.ReadKey(true);
                 Console.Clear();
                 return;
             }
 
 
-             float damgeTaken = _currentEnemy.Attack(_player);
-             Console.WriteLine(_currentEnemy.Name + " dealt " + damgeTaken);
-
+             
             Console.ReadKey(true);
             Console.Clear();
         }
@@ -301,7 +330,7 @@ namespace BattleArena
                 Console.WriteLine("You Died");
                 _currentScene++;
             }
-            if (_currentEnemy.Health <= 0)
+            else if (_currentEnemy.Health <= 0)
             {
                 Console.WriteLine("You Slayed the " + _currentEnemy.Name);
                 _currentEnemyIndex++;

@@ -9,6 +9,27 @@ namespace BattleArena
         private Item[] _items;
         private Item _currentItem;
 
+        public override float AttackPower 
+        {
+            get
+            {
+                if (_currentItem.ItemType == 0)
+                    return base.AttackPower + CurrentItem.StatBoost;
+                return base.AttackPower;
+            }
+            
+        }
+
+        public override float DefensePower
+        {
+            get
+            {
+                if (_currentItem.ItemType == 1)
+                    return base.DefensePower + CurrentItem.StatBoost;
+                return base.DefensePower;
+            }
+
+        }
         public Item CurrentItem { get { return _currentItem; } }
 
         public Player(string name, float health, float attactPower, float defensePower, Item[] items) : base(name, health, attactPower, defensePower)
@@ -33,6 +54,15 @@ namespace BattleArena
             _currentItem = _items[index];
 
             return true;
+        }
+        public string[] GetItemNames()
+        {
+            string[] itemName = new string[_items.Length];
+
+            for(int i = 0; i < _items.Length; i++)
+                itemName[i] = _items[i].Name;
+
+            return itemName;
         }
 
         /// <summary>

@@ -15,9 +15,9 @@ namespace BattleArena
 
         public float Health { get { return _health; } }
 
-        public float AttackPower { get { return _attackPower; } }
+        public virtual float AttackPower { get { return _attackPower; } }
 
-        public float DefensePower { get { return _defensePower; } }
+        public virtual float DefensePower { get { return _defensePower; } }
 
 
 
