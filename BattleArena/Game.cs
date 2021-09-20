@@ -16,6 +16,15 @@ namespace BattleArena
         ATTACK,
         NONE
     }
+
+    public enum Scene
+    {
+        STARTINGMENU,
+        NAMECREATION,
+        CHARACTERSELECTION,
+        BATTLE,
+        RESTARTMENU
+    }
     public struct Item
     {
         public string Name;
@@ -27,7 +36,7 @@ namespace BattleArena
     {
         private string _playerName; 
         private bool _gameOver;
-        private int _currentScene;
+        private Scene _currentScene;
         private Player _player;
         private Entity[] _enemies;
         private int _currentEnemyIndex = 0;
@@ -115,7 +124,7 @@ namespace BattleArena
             StreamWriter writer = new StreamWriter("SaveData.txt");
 
             //Save current enemy index
-            writer.WriteLine(_currentEnemy);
+            writer.WriteLine(_currentEnemyIndex);
 
             //Save player and Enemy stas
             _player.Save(writer);
@@ -123,6 +132,54 @@ namespace BattleArena
 
             //Closes writer when done saving
             writer.Close();
+        }
+
+        public bool Load()
+        {
+            // Checks to see if the file exits in the doomunet file. . .
+            if (!File.Exists("SaveData.txt"))
+                // If not returns false
+                return false;
+            // Creat a new reader to read from the text file 
+            StreamReader reader = new StreamReader("SaveData.txt");
+
+            // If the first time can't be converted in to an integer. . .
+            if (!int.TryParse(reader.ReadLine(), out _currentEnemyIndex))
+                //return false
+                return false;
+
+            //Load PLayer Job
+            string job = reader.ReadLine();
+
+            if (job == "Wizard")
+                _player = new Player(_wizardItems);
+
+            else if (job == "Knight")
+                _player = new Player(_knightItems);
+            else
+                return false;
+
+           _player.Job = job;  
+            
+            //Create a new instance and try load the player
+            //_player = new Player();
+            if (!_player.Load(reader))
+                return false;
+
+            // Creat a new instance and try to load the enemy 
+            _currentEnemy = new Entity();
+            if (!_currentEnemy.Load(reader))
+                return false;
+
+            // Updates the current instance of ower current enemy
+            _enemies[_currentEnemyIndex] = _currentEnemy;
+
+            //Closes the reader
+            reader.Close();
+
+            return true;
+
+
         }
 
         /// <summary>
@@ -176,6 +233,35 @@ namespace BattleArena
                 return inputReceived;
         }
 
+        public void DisplayStartMenu()
+        {
+            int  choice = GetInput("Welcome to the Battle Arena!", "Start New Game", "Load Game");
+
+            switch (choice)
+            {
+                case 0:
+                    _currentScene = Scene.NAMECREATION;
+                    break;
+                case 1:
+                    if (Load())
+                    {
+                        Console.WriteLine("Load was successful");
+                        Console.ReadKey(true);
+                        Console.Clear();
+                        _currentScene = Scene.BATTLE;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Load was Unsuccessful");
+                        Console.ReadKey(true);
+                        Console.Clear();
+                    }
+                    break;
+                    
+
+            }
+        }
+
         /// <summary>
         /// Calls the appropriate function(s) based on the current scene index
         /// </summary>
@@ -183,17 +269,20 @@ namespace BattleArena
         {
             switch (_currentScene)
             {
-                case 0:
+                case Scene.STARTINGMENU:
+                    DisplayStartMenu();
+                    break;
+                case Scene.NAMECREATION:
                     GetPlayerName();
                     break;
-                case 1:
+                case Scene.CHARACTERSELECTION:
                     CharacterSelection();
                     break;
-                case 2:
+                case Scene.BATTLE:
                     Battle();
                     CheckBattleResults();
                     break;
-                case 3:
+                case Scene.RESTARTMENU:
                     DisplayMainMenu();
                     break;
             }
@@ -248,11 +337,11 @@ namespace BattleArena
 
             if (choice == 0)
                 //Wizard Classification 
-                _player = new Player(_playerName, 50f, 25f, 0f, _wizardItems);
+                _player = new Player(_playerName, 50f, 25f, 0f, _wizardItems, "Wizard");
 
             //Knight Classification
             else if (choice == 1)
-                _player = new Player(_playerName, 75f, 15f, 10f, _knightItems);
+                _player = new Player(_playerName, 75f, 15f, 10f, _knightItems,"Knight");
 
             _currentScene++;
         }
