@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
@@ -43,10 +44,7 @@ namespace BattleArena
             Start();
 
             while(!_gameOver)
-            {
                 Update();
-
-            }
 
             End();
         }
@@ -109,6 +107,22 @@ namespace BattleArena
         {
             Console.WriteLine("FairWell Adventure");
             Console.ReadKey();
+        }
+
+        public void Save()
+        {
+            //Creats aa new Stream writer
+            StreamWriter writer = new StreamWriter("SaveData.txt");
+
+            //Save current enemy index
+            writer.WriteLine(_currentEnemy);
+
+            //Save player and Enemy stas
+            _player.Save(writer);
+            _currentEnemy.Save(writer);
+
+            //Closes writer when done saving
+            writer.Close();
         }
 
         /// <summary>
@@ -290,7 +304,7 @@ namespace BattleArena
 
             DisplayStats(_currentEnemy);
 
-            int choice = GetInput(_currentEnemy.Name + " stands in front of you! What will you do?", "Attack","Equip Item","Remove Equiped Item");            
+            int choice = GetInput(_currentEnemy.Name + " stands in front of you! What will you do?", "Attack","Equip Item","Remove Equiped Item", "SAVE");            
 
             if (choice == 0)
             {
@@ -318,6 +332,16 @@ namespace BattleArena
                 Console.ReadKey();
                 Console.Clear();
                 return;
+            }
+            else if (choice == 3)
+            {
+                Save();
+
+                Console.WriteLine("SAVE GAME");
+                Console.ReadKey(true);
+                Console.Clear();
+                return;
+
             }
                 float damgeTaken = _currentEnemy.Attack(_player);
                     Console.WriteLine(_currentEnemy.Name + " dealt " + damgeTaken);
