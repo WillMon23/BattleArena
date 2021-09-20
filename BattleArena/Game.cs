@@ -67,12 +67,12 @@ namespace BattleArena
         public void InitilizeItems()
         {
             //WIzard Items 
-            Item bigWand = new Item { Name = "Big Wand", StatBoost = 5 };
-            Item bigShield = new Item { Name = "Big Shield", StatBoost = 15 };
+            Item bigWand = new Item { Name = "Big Wand", StatBoost = 5, Type = ItemType.ATTACK };
+            Item bigShield = new Item { Name = "Big Shield", StatBoost = 15 , Type = ItemType.DEFENSE};
 
             //Kight items
-            Item wand = new Item { Name = "Wand", StatBoost = 1025f };
-            Item shoes = new Item { Name = "Shoes", StatBoost = 9000.05f };
+            Item wand = new Item { Name = "Wand", StatBoost = 1025f, Type = ItemType.ATTACK};
+            Item shoes = new Item { Name = "Shoes", StatBoost = 9000.05f, Type = ItemType.DEFENSE};
 
             // Initilize Arry
             _wizardItems = new Item[] { bigWand, bigShield };
@@ -290,18 +290,15 @@ namespace BattleArena
 
             DisplayStats(_currentEnemy);
 
-            int choice = GetInput(_currentEnemy.Name + " stands in front of you! What will you do?", "Attack","Equip Item");
-
-            _currentEnemy.TakeDamage(_player.AttackPower);
+            int choice = GetInput(_currentEnemy.Name + " stands in front of you! What will you do?", "Attack","Equip Item","Remove Equiped Item");            
 
             if (choice == 0)
             {
                 float damageDealt = _player.Attack(_currentEnemy);
+                _currentEnemy.TakeDamage(_player.AttackPower);
                 Console.WriteLine("You delt " + damageDealt + " damage!");
-
-                float damgeTaken = _currentEnemy.Attack(_player);
-                Console.WriteLine(_currentEnemy.Name + " dealt " + damgeTaken);
-
+                
+                return;
 
             }
             else if (choice == 1)
@@ -311,7 +308,19 @@ namespace BattleArena
                 Console.Clear();
                 return;
             }
+            else if (choice == 2)
+            {
+                if (!_player.TryToRemoveCurrentItm())
+                    Console.WriteLine("You Don't have anything equiped.");
+                else
+                    Console.WriteLine("You placed the item in your bag.");
 
+                Console.ReadKey();
+                Console.Clear();
+                return;
+            }
+                float damgeTaken = _currentEnemy.Attack(_player);
+                    Console.WriteLine(_currentEnemy.Name + " dealt " + damgeTaken);
 
              
             Console.ReadKey(true);
