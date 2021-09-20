@@ -136,17 +136,20 @@ namespace BattleArena
 
         public bool Load()
         {
+            bool loadSuccessful = true;
             // Checks to see if the file exits in the doomunet file. . .
             if (!File.Exists("SaveData.txt"))
                 // If not returns false
-                return false;
+                loadSuccessful = false;
             // Creat a new reader to read from the text file 
             StreamReader reader = new StreamReader("SaveData.txt");
 
             // If the first time can't be converted in to an integer. . .
             if (!int.TryParse(reader.ReadLine(), out _currentEnemyIndex))
-                //return false
-                return false;
+            {//return false
+                loadSuccessful = false;
+                
+            }
 
             //Load PLayer Job
             string job = reader.ReadLine();
@@ -157,19 +160,19 @@ namespace BattleArena
             else if (job == "Knight")
                 _player = new Player(_knightItems);
             else
-                return false;
+                loadSuccessful = false;
 
            _player.Job = job;  
             
             //Create a new instance and try load the player
             //_player = new Player();
             if (!_player.Load(reader))
-                return false;
+                loadSuccessful = false;
 
             // Creat a new instance and try to load the enemy 
             _currentEnemy = new Entity();
             if (!_currentEnemy.Load(reader))
-                return false;
+                loadSuccessful = false;
 
             // Updates the current instance of ower current enemy
             _enemies[_currentEnemyIndex] = _currentEnemy;
@@ -177,7 +180,7 @@ namespace BattleArena
             //Closes the reader
             reader.Close();
 
-            return true;
+            return loadSuccessful;
 
 
         }
